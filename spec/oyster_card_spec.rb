@@ -35,4 +35,18 @@ describe OysterCard do
 
   end
 
+  describe "#Deduct" do
+
+    it { is_expected.to respond_to(:deduct).with(1).argument }
+
+    it "Return a value instead of nil" do
+      expect(subject.deduct 1).to be_a(Numeric)
+    end
+
+    it "Deducts amount spent" do
+      expect{ subject.deduct 1 }.to change{ subject.balance }.by -1
+    end
+
+  end
+
 end
