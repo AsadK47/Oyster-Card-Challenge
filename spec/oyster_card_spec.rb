@@ -23,12 +23,10 @@ describe OysterCard do
       expect(subject).to respond_to(:top_up).with(1).argument
     end
 
-    it 'increases balance by amount given' do
-      amount = 1
-      card.top_up(amount)
-      expect { card.top_up(amount) }.to change { card.balance }.by(amount)
+    it "Can top up balance" do
+      expect{ subject.top_up 1 }.to change{ subject.balance }.by 1
     end
 
   end
-  
+
 end
