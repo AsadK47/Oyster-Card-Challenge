@@ -3,7 +3,7 @@ require 'pry'
 
 describe OysterCard do
 
-  let(:card) { OysterCard.new }
+  let(:station) { double :station }
 
   describe "#initialize with balance of 0" do
 
@@ -12,6 +12,8 @@ describe OysterCard do
     it 'has a default balance of 0' do
       expect(subject.balance).to eq OysterCard::DEFAULT_BALANCE
     end
+
+    it { is_expected.to respond_to(:entry_station) }
 
   end
 
@@ -31,6 +33,7 @@ describe OysterCard do
 
   end
 
+  # Test for deduct method is invalid due to it becoming a private method
   # describe "#Deduct" do
   #
   #   it { is_expected.to respond_to(:deduct).with(1).argument }
@@ -46,22 +49,28 @@ describe OysterCard do
     it { is_expected.to respond_to(:in_journey?) }
 
     it "Initializes with in_journey? as false" do
-      expect(card.in_journey?).to eq false
+      expect(subject.in_journey?).to eq false
     end
 
   end
 
   describe "#touch_in" do
 
-    it { is_expected.to respond_to(:touch_in)}
+    it { is_expected.to respond_to(:touch_in).with(1).argument}
 
     it "Changes in journey to true with touch_in" do
       subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
-      expect{ subject.touch_in }.to change{ subject.in_journey? }.to(true)
+      expect{ subject.touch_in(station) }.to change{ subject.in_journey? }.to(true)
     end
 
     it "Throws error if card has insufficient balance" do
-      expect{ card.touch_in }.to raise_error "Insufficient funds!"
+      expect{ subject.touch_in(station) }.to raise_error "Insufficient funds!"
+    end
+
+    it "Sets the entry_station value" do
+      subject.top_up(10)
+      subject.touch_in(station)
+      expect(subject.entry_station).to eq station
     end
 
   end
@@ -72,12 +81,19 @@ describe OysterCard do
 
     it "Changes in journey to false with touch_out" do
       subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
-      subject.touch_in
+      subject.touch_in(station)
       expect{ subject.touch_out }.to change{ subject.in_journey? }.to(false)
     end
 
     it "Charges the user on touch_out" do
       expect{ subject.touch_out }.to change{ subject.balance }.by -OysterCard::MINIMUM_FARE
+    end
+
+    it "Will reset entry_station back to nil" do
+      subject.top_up(10)
+      subject.touch_in(station)
+      subject.touch_out
+      expect(subject.entry_station).to eq nil
     end
 
   end
