@@ -13,7 +13,7 @@ class OysterCard
   end
 
   def top_up(amount)
-    fail "Error: Card MAX limit is #{MAXLIMIT}" if @balance + amount > 90
+    fail "Error: Card MAX limit is #{MAXLIMIT}" if @balance + amount > MAXLIMIT
     @balance += amount
   end
 

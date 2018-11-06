@@ -55,13 +55,13 @@ describe OysterCard do
 
     it { is_expected.to respond_to(:touch_in)}
 
+    it "Changes in journey to true with touch_in" do
+      subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
+      expect{ subject.touch_in }.to change{ subject.in_journey? }.to(true)
+    end
+
     it "Throws error if card has insufficient balance" do
-      min = OysterCard::MIN_TOUCH_IN_LIMIT
-      if card.balance < min
-        expect{ card.touch_in }.to raise_error "Insufficient funds!"
-      elsif card.balance >= min
-        expect{ card.touch_in }.to change{ card.in_journey? }.to(true)
-      end
+      expect{ card.touch_in }.to raise_error "Insufficient funds!"
     end
 
   end
@@ -70,13 +70,10 @@ describe OysterCard do
 
     it { is_expected.to respond_to(:touch_out) }
 
-    it "Changes the state of in_journey? to false" do
-      min = OysterCard::MIN_TOUCH_IN_LIMIT
-      if card.balance >= min
-        expect { card.touch_out }.to change{ card.in_journey? }.to(false)
-      else
-        0
-      end
+    it "Changes in journey to false with touch_out" do
+      subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
+      subject.touch_in
+      expect{ subject.touch_out }.to change{ subject.in_journey? }.to(false)
     end
 
     it "Charges the user on touch_out" do
