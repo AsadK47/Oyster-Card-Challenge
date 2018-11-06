@@ -33,17 +33,6 @@ describe OysterCard do
 
   end
 
-  # Test for deduct method is invalid due to it becoming a private method
-  # describe "#Deduct" do
-  #
-  #   it { is_expected.to respond_to(:deduct).with(1).argument }
-  #
-  #   it "Deducts amount spent" do
-  #     expect{ subject.deduct 1 }.to change{ subject.balance }.by -1
-  #   end
-  #
-  # end
-
   describe "#in_journey" do
 
     it { is_expected.to respond_to(:in_journey?) }
@@ -77,23 +66,26 @@ describe OysterCard do
 
   describe "#touch_out" do
 
-    it { is_expected.to respond_to(:touch_out) }
+    before { subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT); subject.touch_in(station) }
+
+    it { is_expected.to respond_to(:touch_out).with(1).argument }
 
     it "Changes in journey to false with touch_out" do
-      subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
-      subject.touch_in(station)
-      expect{ subject.touch_out }.to change{ subject.in_journey? }.to(false)
+      expect{ subject.touch_out(station) }.to change{ subject.in_journey? }.to(false)
     end
 
     it "Charges the user on touch_out" do
-      expect{ subject.touch_out }.to change{ subject.balance }.by -OysterCard::MINIMUM_FARE
-    end
+      expect{ subject.touch_out(station) }.to change{ subject.balance }.by -OysterCard::MINIMUM_FARE
+    end 
 
     it "Will reset entry_station back to nil" do
-      subject.top_up(10)
-      subject.touch_in(station)
-      subject.touch_out
+      subject.touch_out(station)
       expect(subject.entry_station).to eq nil
+    end
+
+    it "Sets a touch_out station value" do
+      subject.touch_out(station)
+      expect(subject.exit_station).to eq station
     end
 
   end
