@@ -4,6 +4,8 @@ class OysterCard
 
   DEFAULT_BALANCE = 0
   MAXLIMIT = 90
+  MIN_TOUCH_IN_LIMIT = 1
+  MINIMUM_FARE = 1
 
   def initialize(balance = DEFAULT_BALANCE)
     @balance = balance
@@ -15,22 +17,24 @@ class OysterCard
     @balance += amount
   end
 
-  def deduct(amount)
-    @balance -= amount
-  end
-
   def in_journey?
     @in_journey
   end
 
   def touch_in
-    fail "You can't touch in twice!" if @in_journey == true
+    fail "Insufficient funds!" if @balance < 1
     @in_journey = true
   end
 
   def touch_out
-    fail "You can't touch out twice!" if @in_journey == false
     @in_journey = false
+    deduct(MINIMUM_FARE)
+  end
+
+  private
+
+  def deduct(amount)
+    @balance -= amount
   end
 
 end

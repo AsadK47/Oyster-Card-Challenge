@@ -31,15 +31,15 @@ describe OysterCard do
 
   end
 
-  describe "#Deduct" do
-
-    it { is_expected.to respond_to(:deduct).with(1).argument }
-
-    it "Deducts amount spent" do
-      expect{ subject.deduct 1 }.to change{ subject.balance }.by -1
-    end
-
-  end
+  # describe "#Deduct" do
+  #
+  #   it { is_expected.to respond_to(:deduct).with(1).argument }
+  #
+  #   it "Deducts amount spent" do
+  #     expect{ subject.deduct 1 }.to change{ subject.balance }.by -1
+  #   end
+  #
+  # end
 
   describe "#in_journey" do
 
@@ -55,13 +55,13 @@ describe OysterCard do
 
     it { is_expected.to respond_to(:touch_in)}
 
-    it "Changes the state of in_journey? to true" do
-      expect{ card.touch_in }.to change{ card.in_journey? }.to(true)
-    end
-
-    it "Checks if card is already in_journey and prevents double touch" do
-      card.touch_in
-      expect{ card.touch_in }.to raise_error "You can't touch in twice!"
+    it "Throws error if card has insufficient balance" do
+      min = OysterCard::MIN_TOUCH_IN_LIMIT
+      if card.balance < min
+        expect{ card.touch_in }.to raise_error "Insufficient funds!"
+      elsif card.balance >= min
+        expect{ card.touch_in }.to change{ card.in_journey? }.to(true)
+      end
     end
 
   end
@@ -71,12 +71,16 @@ describe OysterCard do
     it { is_expected.to respond_to(:touch_out) }
 
     it "Changes the state of in_journey? to false" do
-      card.touch_in
-      expect { card.touch_out }.to change{ card.in_journey? }.to(false)
+      min = OysterCard::MIN_TOUCH_IN_LIMIT
+      if card.balance >= min
+        expect { card.touch_out }.to change{ card.in_journey? }.to(false)
+      else
+        0
+      end
     end
 
-    it "Checks if card is already out and prevents touch_out" do
-      expect{ card.touch_out }.to raise_error "You can't touch out twice!"
+    it "Charges the user on touch_out" do
+      expect{ subject.touch_out }.to change{ subject.balance }.by -OysterCard::MINIMUM_FARE
     end
 
   end
