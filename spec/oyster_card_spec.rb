@@ -3,7 +3,19 @@ require 'pry'
 
 describe OysterCard do
 
-  let(:station) { double :station }
+  let(:entry_station) { double :station }
+  let(:exit_station) { double :station }
+
+  def top_up_touch_in
+    subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
+    subject.touch_in(entry_station)
+  end
+
+  def top_up_touch_in_touch_out
+    subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
+    subject.touch_in(entry_station)
+    subject.touch_out(exit_station)
+  end
 
   describe "#initialize with balance of 0" do
 
@@ -12,8 +24,6 @@ describe OysterCard do
     it 'has a default balance of 0' do
       expect(subject.balance).to eq OysterCard::DEFAULT_BALANCE
     end
-
-    it { is_expected.to respond_to(:entry_station) }
 
   end
 
@@ -49,44 +59,70 @@ describe OysterCard do
 
     it "Changes in journey to true with touch_in" do
       subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
-      expect{ subject.touch_in(station) }.to change{ subject.in_journey? }.to(true)
+      expect{ subject.touch_in(entry_station) }.to change{ subject.in_journey? }.to(true)
     end
 
     it "Throws error if card has insufficient balance" do
-      expect{ subject.touch_in(station) }.to raise_error "Insufficient funds!"
+      expect{ subject.touch_in(entry_station) }.to raise_error "Insufficient funds!"
     end
 
     it "Sets the entry_station value" do
-      subject.top_up(10)
-      subject.touch_in(station)
-      expect(subject.entry_station).to eq station
+      top_up_touch_in
+      expect(subject.entry_station).to eq entry_station
     end
 
   end
 
   describe "#touch_out" do
 
-    before { subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT); subject.touch_in(station) }
-
     it { is_expected.to respond_to(:touch_out).with(1).argument }
 
     it "Changes in journey to false with touch_out" do
-      expect{ subject.touch_out(station) }.to change{ subject.in_journey? }.to(false)
+      top_up_touch_in
+      expect{ subject.touch_out(exit_station) }.to change{ subject.in_journey? }.to(false)
     end
 
     it "Charges the user on touch_out" do
-      expect{ subject.touch_out(station) }.to change{ subject.balance }.by -OysterCard::MINIMUM_FARE
-    end 
+      top_up_touch_in
+      expect{ subject.touch_out(exit_station) }.to change{ subject.balance }.by -OysterCard::MINIMUM_FARE
+    end
 
     it "Will reset entry_station back to nil" do
-      subject.touch_out(station)
+      top_up_touch_in_touch_out
       expect(subject.entry_station).to eq nil
     end
 
     it "Sets a touch_out station value" do
-      subject.touch_out(station)
-      expect(subject.exit_station).to eq station
+      top_up_touch_in_touch_out
+      expect(subject.exit_station).to eq exit_station
     end
+
+  end
+
+   describe "#journey" do
+
+     it { is_expected.to respond_to(:journey_history) }
+
+     it "Expects journey_history to be an empty array" do
+       expect(subject.journey_history).to eq []
+     end
+
+     it 'will store the journey hash in the jouney_history' do
+       top_up_touch_in_touch_out
+       expect(subject.journey_history).to include subject.journey
+     end
+
+     it { is_expected.to respond_to(:journey) }
+
+     it 'will store entry station in the journey hash' do
+       top_up_touch_in
+       expect(entry_station).to eq subject.journey[:entry]
+     end
+
+     it 'will store exit station in the journey hash' do
+       top_up_touch_in_touch_out
+       expect(exit_station).to eq subject.journey[:exit]
+     end
 
   end
 
