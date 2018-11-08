@@ -7,7 +7,7 @@ class OysterCard
 
   attr_reader :balance, :entry_station, :exit_station, :journey_history, :journey
 
-  def initialize(balance = DEFAULT_BALANCE, entry_station = nil, exit_station = nil, journey_history = [], journey = {:entry => nil, :exit => nil})
+  def initialize(balance = DEFAULT_BALANCE, journey_history = [], journey = {:entry => nil, :exit => nil})
     @balance = balance
     @entry_station = entry_station
     @exit_station = exit_station
@@ -36,6 +36,7 @@ class OysterCard
     @exit_station = station
     @journey[:exit] = station
     @journey_history << @journey
+    @journey = {}
   end
 
   private
