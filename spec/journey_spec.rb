@@ -1,36 +1,38 @@
 require 'journey'
 
 describe Journey do
+  let(:station) { double :station, zone: 1}
 
-  describe "#Respondents" do
-
-    it { is_expected.to respond_to(:fare) }
-
-    it { is_expected.to respond_to(:start).with(1).argument }
-
-    it { is_expected.to respond_to(:finish).with(1).argument }
-
+  it 'has a penalty fare by default' do
+    expect(subject.fare).to eq Journey::PENALTY_FARE
   end
 
-  # describe "#in_journey" do
-  #
-  #   it { is_expected.to respond_to(:in_journey?) }
-  #
-  #   it "Initializes with in_journey? as false" do
-  #     expect(subject.in_journey?).to eq false
-  #   end
-  #
-  # end
+  it "returns itself when exiting a journey" do
+    expect(subject.finish(station)).to eq(subject)
+  end
 
-  # it "Changes in journey to true with touch_in" do
-  #   subject.top_up(OysterCard::MIN_TOUCH_IN_LIMIT)
-  #   expect{ subject.touch_in(entry_station) }.to change{ subject.in_journey? }.to(true)
-  # end
+  context 'given an entry station' do
+    subject {described_class.new(entry_station: station)}
 
-  # it "Changes in journey to false with touch_out" do
-  #   top_up_touch_in
-  #   expect{ subject.touch_out(exit_station) }.to change{ subject.in_journey? }.to(false)
-  # end
+    it 'has an entry station' do
+      expect(subject.entry_station).to eq station
+    end
 
+    it "returns a penalty fare if no exit station given" do
+      expect(subject.fare).to eq Journey::PENALTY_FARE
+    end
 
+    context 'given an exit station' do
+      let(:other_station) { double :other_station }
+
+      before do
+        subject.finish(other_station)
+      end
+
+      it 'calculates a fare' do
+        expect(subject.fare).to eq 1
+      end
+
+    end
+  end
 end
